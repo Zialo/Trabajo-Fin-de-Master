@@ -15,6 +15,21 @@ En este contexto, es común simular distintas tareas que pueda realizar un brazo
 El objetivo principal será obtener una configuración general de datos con el que se caractericen distintos casos de uso en robótica industrial. Para ello, desglosamos entre los siguientes subobjetivos:
 
 1. Estudiar y analizar en profundidad tanto los distintos estudios y proyectos realizados en este ámbito como los diferentes frameworks de simulación utilizados, dejando claras tanto sus diferencias como sus similitudes. 
+
 2. Generar datos para un conjunto de tareas con cada uno de los frameworks que sean los que utilicemos para generar los distintos modelos en la fase de entrenamiento.
+
 3. Analizar las mejores configuraciones posibles de datos en busca de un patrón capaz de generar una generalización para futuros problemas de modo que sepamos de donde partir inicialmente sea cual sea el problema a evaluar. Para esto trataremos de encontrar las configuraciones que maximicen el RMSE como métrica estándar.
+
 4. Simular en los robots los modelos generados y visualiza los resultados obtenidos mediante diferentes aproximaciones. 
+
+## Frameworks 
+
+### CoppeliaSim
+  1. RLBench
+
+
+
+### MuJoCo
+  1. MetaWorld
+  2. SURREAL
+  3. OpenAI Gym
