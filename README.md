@@ -25,11 +25,11 @@ El objetivo principal será obtener una configuración general de datos con el q
 ## Frameworks 
 
 ### CoppeliaSim
-  1. RLBench
+  1. RLBench: https://github.com/stepjam/RLBench
 
 
 
 ### MuJoCo
-  1. MetaWorld
-  2. SURREAL
-  3. OpenAI Gym
+  1. MetaWorld: https://github.com/rlworkgroup/metaworld
+  2. SURREAL: https://github.com/SurrealAI/surreal
+  3. OpenAI Gym: https://github.com/openai/gym
