@@ -166,11 +166,11 @@ def get_image_from_observation(env, env_prev, i):
         im12 = im6
 
     else:
-        im7 = env_prev.render(offscreen=True, camera_name='topview', resolution=(img_size[0], img_size[1]))
+        im7 = env_prev.render(offscreen=True, camera_name='gripperPOV', resolution=(img_size[0], img_size[1]))
         im8 = env_prev.render(offscreen=True, camera_name='corner', resolution=(img_size[0], img_size[1]))
         im9 = env_prev.render(offscreen=True, camera_name='corner2', resolution=(img_size[0], img_size[1]))
         im10 = env_prev.render(offscreen=True, camera_name='corner3', resolution=(img_size[0], img_size[1]))
-        im11 = env_prev.render(offscreen=True, camera_name='gripperPOV', resolution=(img_size[0], img_size[1]))
+        im11 = env_prev.render(offscreen=True, camera_name='topview', resolution=(img_size[0], img_size[1]))
         im12 = env_prev.render(offscreen=True, camera_name='behindGripper', resolution=(img_size[0], img_size[1]))
 
     im_actual = np.concatenate((im1, im2, im3, im4, im5, im6), axis=2)

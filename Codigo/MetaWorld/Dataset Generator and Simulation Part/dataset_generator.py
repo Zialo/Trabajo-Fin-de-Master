@@ -11,22 +11,19 @@ import shutil
 import sys
 from PIL import Image
 import imageio as iio
-from pathlib import Path
 from metaworld.envs import (ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE,
                             ALL_V2_ENVIRONMENTS_GOAL_HIDDEN)
 
 ITERS = sys.argv[1] if len(sys.argv) > 1 else 10
-NUM = str(sys.argv[3]) if len(sys.argv) > 3 else str(0)
-NAME = 'Imagenes_' + NUM
 
-if not os.path.exists(NAME):
-    os.makedirs(NAME + "/")
-    os.makedirs(NAME + "/Gripper")
-    os.makedirs(NAME + "/Corner")
-    os.makedirs(NAME + "/Corner2")
-    os.makedirs(NAME + "/Corner3")
-    os.makedirs(NAME + "/Top")
-    os.makedirs(NAME + "/BehindGripper")
+if not os.path.exists("Imagenes"):
+    os.makedirs("Imagenes/")
+    os.makedirs("Imagenes/Gripper")
+    os.makedirs("Imagenes/Corner")
+    os.makedirs("Imagenes/Corner2")
+    os.makedirs("Imagenes/Corner3")
+    os.makedirs("Imagenes/Top")
+    os.makedirs("Imagenes/BehindGripper")
 
 img_gripperPOV_List = []
 img_corner_List = []
@@ -55,12 +52,12 @@ for prob in range(int(ITERS)):
     policy = SawyerPickPlaceV2Policy()
     obs = env.reset()  # Reset environment
     obs_data = None
-    with iio.get_writer(NAME + "/data_" + str(prob) + "_.gif", mode="I", fps=30) as writer:
+    with iio.get_writer("Imagenes/data_" + str(prob) + "_.gif", mode="I", fps=30) as writer:
         for i in tqdm.tqdm(range(100)):
             # a = np.array([0.0, 0.0, 1.0, 0.0], dtype=np.float32)
             a = policy.get_action(obs)
             action_list.append(a)
-            obs, reward, done, info = env.step(a)  # Step the environment with the sampled random action
+            obs, reward, done, info = env.step(a) # Step the environment with the sampled random action
             # obs[-3:] = np.array([0.1, 0.8, 0.2])
             if obs_data is None:
                 obs_data = np.concatenate((obs[:3], obs[-3:]), axis=0)
@@ -77,12 +74,7 @@ for prob in range(int(ITERS)):
             img_behindGripper = env.render(offscreen=True, camera_name='behindGripper', resolution=(128, 128))
 
             # Save for the GIFs
-            # writer.append_data(img_corner)
-            # Remove Gifs
-            for filename in Path(NAME).glob("*.gif"):
-                filename.unlink()
-            for filename in Path(NAME).glob("*.jpg"):
-                filename.unlink()
+            writer.append_data(img_corner)
 
             # Save for the Images
             img_gripperPOV_List.append(img_gripperPOV)
@@ -99,11 +91,11 @@ for prob in range(int(ITERS)):
         # plt.savefig(f"img_{i:05d}.jpg")
         # plt.close()
 
-        np.save(NAME + "/positions_" + str(prob) + ".npy", obs_data)
+        np.save("Imagenes/positions_" + str(prob) + ".npy", obs_data)
         for i in range(6):
             plt.plot(range(obs_data.shape[0]), obs_data[:, i], label=str(i))
         plt.legend()
-        plt.savefig(NAME + "/position" + str(prob) + "_over_time.jpg")
+        plt.savefig("Imagenes/position" + str(prob) + "_over_time.jpg")
         plt.close()
 
 print(obs_data.shape)
@@ -112,28 +104,28 @@ with open('Imagenes/Actions.csv', 'w') as f:
     write = csv.writer(f)
     for i_a in range(len(action_list)):
         row = []
-        for a in range(4):
+        for a in range(3):
             row.append(action_list[i_a][a])
         write.writerow(row)
 
 for idx in range(len(img_gripperPOV_List)):
     img = Image.fromarray(img_gripperPOV_List[idx])
-    img.save(os.path.join(NAME + "/Gripper", f"{idx}.png"))
+    img.save(os.path.join("Imagenes/Gripper", f"{idx}.png"))
 
     img = Image.fromarray(img_corner_List[idx])
-    img.save(os.path.join(NAME + "/Corner", f"{idx}.png"))
+    img.save(os.path.join("Imagenes/Corner", f"{idx}.png"))
 
     img = Image.fromarray(img_corner2_List[idx])
-    img.save(os.path.join(NAME + "/Corner2", f"{idx}.png"))
+    img.save(os.path.join("Imagenes/Corner2", f"{idx}.png"))
 
     img = Image.fromarray(img_corner3_List[idx])
-    img.save(os.path.join(NAME + "/Corner3", f"{idx}.png"))
+    img.save(os.path.join("Imagenes/Corner3", f"{idx}.png"))
 
     img = Image.fromarray(img_topview_List[idx])
-    img.save(os.path.join(NAME + "/Top", f"{idx}.png"))
+    img.save(os.path.join("Imagenes/Top", f"{idx}.png"))
 
     img = Image.fromarray(img_behindGripper_List[idx])
-    img.save(os.path.join(NAME + "/BehindGripper", f"{idx}.png"))
+    img.save(os.path.join("Imagenes/BehindGripper", f"{idx}.png"))
 
 # Generamos ahora las particiones de Train y Test
 
@@ -141,49 +133,49 @@ train_arange = []
 test_arange = []
 
 # Preparo carpeta de Train
-if not os.path.exists("Train_dataset" + NUM):
-    os.makedirs("Train_dataset" + NUM)
-    os.makedirs("Train_dataset" + NUM + "/Gripper")
-    os.makedirs("Train_dataset" + NUM + "/Corner")
-    os.makedirs("Train_dataset" + NUM + "/Corner2")
-    os.makedirs("Train_dataset" + NUM + "/Corner3")
-    os.makedirs("Train_dataset" + NUM + "/Top")
-    os.makedirs("Train_dataset" + NUM + "/BehindGripper")
+if not os.path.exists("Train_dataset"):
+    os.makedirs("Train_dataset")
+    os.makedirs("Train_dataset/Gripper")
+    os.makedirs("Train_dataset/Corner")
+    os.makedirs("Train_dataset/Corner2")
+    os.makedirs("Train_dataset/Corner3")
+    os.makedirs("Train_dataset/Top")
+    os.makedirs("Train_dataset/BehindGripper")
 
 else:
-    shutil.rmtree("Train_dataset" + NUM)
-    os.makedirs("Train_dataset" + NUM)
-    os.makedirs("Train_dataset" + NUM + "/Gripper")
-    os.makedirs("Train_dataset" + NUM + "/Corner")
-    os.makedirs("Train_dataset" + NUM + "/Corner2")
-    os.makedirs("Train_dataset" + NUM + "/Corner3")
-    os.makedirs("Train_dataset" + NUM + "/Top")
-    os.makedirs("Train_dataset" + NUM + "/BehindGripper")
+    shutil.rmtree("Train_dataset")
+    os.makedirs("Train_dataset")
+    os.makedirs("Train_dataset/Gripper")
+    os.makedirs("Train_dataset/Corner")
+    os.makedirs("Train_dataset/Corner2")
+    os.makedirs("Train_dataset/Corner3")
+    os.makedirs("Train_dataset/Top")
+    os.makedirs("Train_dataset/BehindGripper")
 
 # Preparo carpeta de Test
-if not os.path.exists("Test_dataset" + NUM):
-    os.makedirs("Test_dataset" + NUM)
-    os.makedirs("Test_dataset" + NUM + "/Gripper")
-    os.makedirs("Test_dataset" + NUM + "/Corner")
-    os.makedirs("Test_dataset" + NUM + "/Corner2")
-    os.makedirs("Test_dataset" + NUM + "/Corner3")
-    os.makedirs("Test_dataset" + NUM + "/Top")
-    os.makedirs("Test_dataset" + NUM + "/BehindGripper")
+if not os.path.exists("Test_dataset"):
+    os.makedirs("Test_dataset")
+    os.makedirs("Test_dataset/Gripper")
+    os.makedirs("Test_dataset/Corner")
+    os.makedirs("Test_dataset/Corner2")
+    os.makedirs("Test_dataset/Corner3")
+    os.makedirs("Test_dataset/Top")
+    os.makedirs("Test_dataset/BehindGripper")
 
 else:
-    shutil.rmtree("Test_dataset" + NUM)
-    os.makedirs("Test_dataset" + NUM)
-    os.makedirs("Test_dataset" + NUM + "/Gripper")
-    os.makedirs("Test_dataset" + NUM + "/Corner")
-    os.makedirs("Test_dataset" + NUM + "/Corner2")
-    os.makedirs("Test_dataset" + NUM + "/Corner3")
-    os.makedirs("Test_dataset" + NUM + "/Top")
-    os.makedirs("Test_dataset" + NUM + "/BehindGripper")
+    shutil.rmtree("Test_dataset")
+    os.makedirs("Test_dataset")
+    os.makedirs("Test_dataset/Gripper")
+    os.makedirs("Test_dataset/Corner")
+    os.makedirs("Test_dataset/Corner2")
+    os.makedirs("Test_dataset/Corner3")
+    os.makedirs("Test_dataset/Top")
+    os.makedirs("Test_dataset/BehindGripper")
 
 # Imagenes y Archivo de Acciones para Train
 file_counter = 0
 for i in train_dataset:
-    path, dirs, files = next(os.walk(NAME))
+    path, dirs, files = next(os.walk("Imagenes"))
 
     if i == 0:
         num_prueba = i
@@ -195,38 +187,38 @@ for i in train_dataset:
         train_arange.append(j)
 
         # Gripper
-        old_image = NAME + "/Gripper/" + str(j) + ".png"
-        new_image = "Train_dataset" + NUM + "/Gripper/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Gripper/" + str(j) + ".png"
+        new_image = "Train_dataset/Gripper/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Corner
-        old_image = NAME + "/Corner/" + str(j) + ".png"
-        new_image = "Train_dataset" + NUM + "/Corner/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Corner/" + str(j) + ".png"
+        new_image = "Train_dataset/Corner/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Corner2
-        old_image = NAME + "/Corner2/" + str(j) + ".png"
-        new_image = "Train_dataset" + NUM + "/Corner2/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Corner2/" + str(j) + ".png"
+        new_image = "Train_dataset/Corner2/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Corner3
-        old_image = NAME + "/Corner3/" + str(j) + ".png"
-        new_image = "Train_dataset" + NUM + "/Corner3/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Corner3/" + str(j) + ".png"
+        new_image = "Train_dataset/Corner3/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Top
-        old_image = NAME + "/Top/" + str(j) + ".png"
-        new_image = "Train_dataset" + NUM + "/Top/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Top/" + str(j) + ".png"
+        new_image = "Train_dataset/Top/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # BehindGripper
-        old_image = NAME + "/BehindGripper/" + str(j) + ".png"
-        new_image = "Train_dataset" + NUM + "/BehindGripper/" + str(file_counter) + ".png"
+        old_image = "Imagenes/BehindGripper/" + str(j) + ".png"
+        new_image = "Train_dataset/BehindGripper/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
@@ -235,7 +227,7 @@ for i in train_dataset:
 # CSV para Train
 # Extraigo las Filas de Train
 action_train = []
-with open(NAME + '/Actions.csv') as csv_file:
+with open('Imagenes/Actions.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -245,7 +237,7 @@ with open(NAME + '/Actions.csv') as csv_file:
     print(f'Processed {line_count} lines.')
 
 # Genero un nuevo CSV de Train
-with open('Train_dataset' + NUM + '/Train_Actions.csv', 'w') as f:
+with open('Train_dataset/Train_Actions.csv', 'w') as f:
     write = csv.writer(f)
     for i_a in range(len(action_train)):
         row = []
@@ -256,7 +248,7 @@ with open('Train_dataset' + NUM + '/Train_Actions.csv', 'w') as f:
 # Imagenes y Archivo de Acciones para Test
 file_counter = 0
 for i in test_dataset:
-    path, dirs, files = next(os.walk(NAME))
+    path, dirs, files = next(os.walk("Imagenes"))
 
     if i == 0:
         num_prueba = i
@@ -268,38 +260,38 @@ for i in test_dataset:
         test_arange.append(j)
 
         # Gripper
-        old_image = NAME + "/Gripper/" + str(j) + ".png"
-        new_image = "Test_dataset" + NUM + "/Gripper/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Gripper/" + str(j) + ".png"
+        new_image = "Test_dataset/Gripper/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Corner
-        old_image = NAME + "/Corner/" + str(j) + ".png"
-        new_image = "Test_dataset" + NUM + "/Corner/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Corner/" + str(j) + ".png"
+        new_image = "Test_dataset/Corner/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Corner2
-        old_image = NAME + "/Corner2/" + str(j) + ".png"
-        new_image = "Test_dataset" + NUM + "/Corner2/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Corner2/" + str(j) + ".png"
+        new_image = "Test_dataset/Corner2/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Corner3
-        old_image = NAME + "/Corner3/" + str(j) + ".png"
-        new_image = "Test_dataset" + NUM + "/Corner3/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Corner3/" + str(j) + ".png"
+        new_image = "Test_dataset/Corner3/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # Top
-        old_image = NAME + "/Top/" + str(j) + ".png"
-        new_image = "Test_dataset" + NUM + "/Top/" + str(file_counter) + ".png"
+        old_image = "Imagenes/Top/" + str(j) + ".png"
+        new_image = "Test_dataset/Top/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
         # BehindGripper
-        old_image = NAME + "/BehindGripper/" + str(j) + ".png"
-        new_image = "Test_dataset" + NUM + "/BehindGripper/" + str(file_counter) + ".png"
+        old_image = "Imagenes/BehindGripper/" + str(j) + ".png"
+        new_image = "Test_dataset/BehindGripper/" + str(file_counter) + ".png"
         # shutil.copyfile(old_image, new_image)
         shutil.move(old_image, new_image)  # Para mover en lugar de copiar
 
@@ -308,7 +300,7 @@ for i in test_dataset:
 # CSV para Test
 # Extraigo las Filas de Test
 action_test = []
-with open(NAME + '/Actions.csv') as csv_file:
+with open('Imagenes/Actions.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -318,7 +310,7 @@ with open(NAME + '/Actions.csv') as csv_file:
     print(f'Processed {line_count} lines.')
 
 # Genero un nuevo CSV de Test
-with open('Test_dataset' + NUM + '/Test_Actions.csv', 'w') as f:
+with open('Test_dataset/Test_Actions.csv', 'w') as f:
     write = csv.writer(f)
     for i_a in range(len(action_test)):
         row = []
@@ -326,4 +318,4 @@ with open('Test_dataset' + NUM + '/Test_Actions.csv', 'w') as f:
             row.append(action_test[i_a][a])
         write.writerow(row)
 
-shutil.rmtree(NAME)
+shutil.rmtree("Imagenes")
