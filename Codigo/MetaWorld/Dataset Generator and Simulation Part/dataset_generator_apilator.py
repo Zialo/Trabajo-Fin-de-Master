@@ -15,34 +15,34 @@ import imageio as iio
 from pathlib import Path
 from metaworld.envs import (ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE,
                             ALL_V2_ENVIRONMENTS_GOAL_HIDDEN)
+                            
+OPTION = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 
-NAME = 'Dataset_Mujoco'
-carpetas = ['MuJoCo_100_1',
-            'MuJoCo_100_2',
-            'MuJoCo_100_3',
-            'MuJoCo_100_4',
-            'MuJoCo_100_5',
-            'MuJoCo_500',
+NAME = 'Dataset_Mujoco_2'
+carpetas = ['MuJoCo_500_1',
             'MuJoCo_500_2',
-            'MuJoCo_600']
+            'MuJoCo_500_3',
+            'MuJoCo_500_4']
 
-csv_train = ['MuJoCo_100_1/Train_dataset/Train_Actions.csv',
-             'MuJoCo_100_2/Train_dataset/Train_Actions.csv',
-             'MuJoCo_100_3/Train_dataset/Train_Actions.csv',
-             'MuJoCo_100_4/Train_dataset/Train_Actions.csv',
-             'MuJoCo_100_5/Train_dataset/Train_Actions.csv',
-             'MuJoCo_500/Train_dataset/Train_Actions.csv',
+csv_train = ['MuJoCo_500_1/Train_dataset/Train_Actions.csv',
              'MuJoCo_500_2/Train_dataset/Train_Actions.csv',
-             'MuJoCo_600/Train_dataset/Train_Actions.csv']
+             'MuJoCo_500_3/Train_dataset/Train_Actions.csv',
+             'MuJoCo_500_4/Train_dataset/Train_Actions.csv']
 
-csv_test = ['MuJoCo_100_1/Test_dataset/Test_Actions.csv',
-            'MuJoCo_100_2/Test_dataset/Test_Actions.csv',
-            'MuJoCo_100_3/Test_dataset/Test_Actions.csv',
-            'MuJoCo_100_4/Test_dataset/Test_Actions.csv',
-            'MuJoCo_100_5/Test_dataset/Test_Actions.csv',
-            'MuJoCo_500/Test_dataset/Test_Actions.csv',
+csv_test = ['MuJoCo_500_1/Test_dataset/Test_Actions.csv',
             'MuJoCo_500_2/Test_dataset/Test_Actions.csv',
-            'MuJoCo_600/Test_dataset/Test_Actions.csv']
+            'MuJoCo_500_3/Test_dataset/Test_Actions.csv',
+            'MuJoCo_500_4/Test_dataset/Test_Actions.csv']
+
+csv_tam_train = ['MuJoCo_500_1/Train_dataset/Tam_pruebas_train.csv',
+                 'MuJoCo_500_2/Train_dataset/Tam_pruebas_train.csv',
+                 'MuJoCo_500_3/Train_dataset/Tam_pruebas_train.csv',
+                 'MuJoCo_500_4/Train_dataset/Tam_pruebas_train.csv']
+
+csv_tam_test = ['MuJoCo_500_1/Test_dataset/Tam_pruebas_test.csv',
+                'MuJoCo_500_2/Test_dataset/Tam_pruebas_test.csv',
+                'MuJoCo_500_3/Test_dataset/Tam_pruebas_test.csv',
+                'MuJoCo_500_4/Test_dataset/Tam_pruebas_test.csv']
 
 # Genero las carpetas
 if not os.path.exists(NAME):
@@ -147,6 +147,29 @@ for carpeta in carpetas:
                 row.append(action_train[i_a][a])
             write.writerow(row)
 
+    # CSV para Tam_Pruebas_Train
+    print('Empieza CSV Tam_pruebas_Train')
+    tam = []
+    tam_max = 0
+    for i in csv_tam_train:
+        with open(i) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                if (i == csv_tam_train[0]) or ((i != csv_tam_train[0]) and (int(row[0]) != 0)):  # Para saltarnos el primer 0 del resto
+                    value = int(row[0]) + tam_max
+                    tam.append(value)
+        tam_max = int(row[0])
+        print('Tam_max: ', str(tam_max))
+
+    # Genero un nuevo CSV de Tam
+    with open(NAME + "/Train_dataset/Tam_pruebas_train.csv", 'w') as f:
+        write = csv.writer(f)
+        for i_a in range(len(tam)):
+            row = []
+            row.append(tam[i_a])
+            write.writerow(row)
+
     # Imagenes de Test
     path_test = carpeta + '/Test_dataset/'
     path_aux = path_test + '/Gripper'
@@ -208,4 +231,27 @@ for carpeta in carpetas:
             row = []
             for a in range(4):
                 row.append(action_test[i_a][a])
+            write.writerow(row)
+
+    # CSV para Tam_Pruebas_Test
+    print('Empieza CSV Tam_pruebas_Test')
+    tam = []
+    tam_max = 0
+    for i in csv_tam_test:
+        with open(i) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for row in csv_reader:
+                if (i == csv_tam_test[0]) or ((i != csv_tam_test[0]) and (int(row[0]) != 0)):  # Para saltarnos el primer 0 del resto
+                    value = int(row[0]) + tam_max
+                    tam.append(value)
+        tam_max = int(row[0])
+        print('Tam_max: ', str(tam_max))
+
+    # Genero un nuevo CSV de Tam
+    with open(NAME + "/Test_dataset/Tam_pruebas_test.csv", 'w') as f:
+        write = csv.writer(f)
+        for i_a in range(len(tam)):
+            row = []
+            row.append(tam[i_a])
             write.writerow(row)
