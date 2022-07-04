@@ -175,13 +175,13 @@ obs = None
 obs_prev = None
 env_prev = None
 done = False
-Done = False
 i = 0
 its = 0
 finalize = 0
 vector_init = []
 vector_finalize = []
-vector_finalize_bool = []
+vector_finalize_bool = [0] * int(NUM_PRUEBAS)
+vector_porcentaje_acierto = []
 
 #scaler = joblib.load("MinMax_scaler.save")
 num_iters_seguidas = 0
@@ -199,11 +199,6 @@ action_prev = np.array([0, 0, 0, 0], dtype="float32")
 
 vector_init.append(i)
 
-if (done == False):
-    vector_finalize_bool.append(0)
-else:
-    vector_finalize_bool.append(1)
-
 done = False
 its = its + 1
 obs_prev = obs
@@ -212,6 +207,7 @@ nearness = 0 # Vamos a queres que una vez este cerca, se siga acercando diez ite
 while (not done) or (int(NUM_PRUEBAS) > int(its)):
     print("Reinicio cuando = 0 -> ", str(int(NUM_ITERS) - int(num_iters_seguidas)))
     print("Pruebas realizadas correctamente: ", int(finalize), "/", int(NUM_PRUEBAS))
+    print(vector_finalize_bool)
     if ((int(NUM_ITERS) - int(num_iters_seguidas) == 0) or (done == True)):
 
         print('Reset Episode')
@@ -230,11 +226,8 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
 
         vector_init.append(i)
 
-        if (done == False):
-            vector_finalize_bool.append(0)
-        else:
-            vector_finalize_bool[-1] = 1
-
+        if (done == True):
+            vector_finalize_bool[int(its)-1] = 1
         done = False
         its = its + 1
         obs_prev = obs
@@ -281,42 +274,50 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
     print("Num Pruebas: ", int(NUM_PRUEBAS))
 
     if its > int(NUM_PRUEBAS):
-        done = True
+        done = True  	 
 
     print('Terminate :', done)
 
-vector_init.append(99)
 vector_pruebas = []
-header = ['Inicio', 'Final', 'Intentos', 'Finaliza']
+header = ['Inicio', 'Final', 'Intentos', 'Finaliza', 'Acierto']
 
-print(len(vector_init))
-print(NUM_PRUEBAS)
-for i in range(int(NUM_PRUEBAS)):
-    vector_pruebas.append(vector_init[i + 1] - vector_init[i])
-
-vector_pruebas[-1] = 999
-vector_init[-1] = 888
-vector_finalize_bool[-1] = 777
 CSV_NAME = str(MODEL_NAME) + ".csv"
 PATH = 'Resultados/' + str(CSV_NAME)
 
-for i in range(len(vector_init) - 1):
+for i in range(len(vector_init)-1):
     vector_finalize.append(int(vector_init[i + 1]) - 1)
-    vector_pruebas.append(int(vector_finalize[i]) - int(vector_init[i]))
+    
+for i in range(int(NUM_PRUEBAS)):
+    vector_pruebas.append(vector_finalize[i] - vector_init[i] + 1)
+
+sum_cum = 0
+for i in range(len(vector_init) - 1):
+    sum_cum += vector_finalize_bool[i]
+    x = sum_cum * 100
+    value = str(float(x/i)) + "%"
+    vector_porcentaje_acierto.append(value)
 
 print(len(vector_init))
+print(vector_init)
 print(len(vector_finalize))
+print(vector_finalize)
 print(len(vector_pruebas))
+print(vector_pruebas)
 print(len(vector_finalize_bool))
+print(vector_finalize_bool)
+print(len(vector_porcentaje_acierto))
+print(vector_porcentaje_acierto)
+
 with open(CSV_NAME, 'w') as f:
     write = csv.writer(f)
     write.writerow(header)
-    for i in range(len(vector_init) - 2):
+    for i in range(len(vector_init) - 1):
         row = []
         row.append(vector_init[i])
         row.append(vector_finalize[i])
         row.append(vector_pruebas[i])
         row.append(vector_finalize_bool[i])
+        row.append(vector_porcentaje_acierto[i])
         write.writerow(row)
 
 '''
