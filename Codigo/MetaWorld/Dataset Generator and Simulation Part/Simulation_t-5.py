@@ -17,7 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 import metaworld
 import random
 import matplotlib.pyplot as plt
-from metaworld.policies.sawyer_pick_place_v2_policy import SawyerPickPlaceV2Policy
+from metaworld.policies.sawyer_pick_out_of_hole_v2_policy import SawyerPickOutOfHoleV2Policy
 import tqdm
 import random
 import imageio as iio
@@ -145,7 +145,7 @@ def predict(model, env, env_prev, action_prev, action_prev2, action_prev3, actio
         pred = model((image, action_prev, action_prev2, action_prev3, action_prev4, action_prev5))
     pred = pred.detach().cpu().numpy()
     prediction = pred[0, :].tolist()
-    prediction.append(1)
+    #prediction.append(1)
     # print("PRED", prediction, " FIN")
     return prediction
 
@@ -166,11 +166,11 @@ def get_image_from_observation(env, env_prev, i):
         im12 = im6
 
     else:
-        im7 = env_prev.render(offscreen=True, camera_name='gripperPOV', resolution=(img_size[0], img_size[1]))
+        im7 = env_prev.render(offscreen=True, camera_name='topview', resolution=(img_size[0], img_size[1]))
         im8 = env_prev.render(offscreen=True, camera_name='corner', resolution=(img_size[0], img_size[1]))
         im9 = env_prev.render(offscreen=True, camera_name='corner2', resolution=(img_size[0], img_size[1]))
         im10 = env_prev.render(offscreen=True, camera_name='corner3', resolution=(img_size[0], img_size[1]))
-        im11 = env_prev.render(offscreen=True, camera_name='topview', resolution=(img_size[0], img_size[1]))
+        im11 = env_prev.render(offscreen=True, camera_name='gripperPOV', resolution=(img_size[0], img_size[1]))
         im12 = env_prev.render(offscreen=True, camera_name='behindGripper', resolution=(img_size[0], img_size[1]))
 
     im_actual = np.concatenate((im1, im2, im3, im4, im5, im6), axis=2)
@@ -206,15 +206,15 @@ print('Acciones desde t hasta t-5:')
 
 SEED = random.randint(1, 100000)
 env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['pick-place-v2-goal-observable'](seed=SEED)
-policy = SawyerPickPlaceV2Policy()
+policy = SawyerPickOutOfHoleV2Policy()
 obs = env.reset()  # Reset environment
 obs_data = None
 
-action_prev = np.array([0, 0, 0], dtype="float32")
-action_prev2 = np.array([0, 0, 0], dtype="float32")
-action_prev3 = np.array([0, 0, 0], dtype="float32")
-action_prev4 = np.array([0, 0, 0], dtype="float32")
-action_prev5 = np.array([0, 0, 0], dtype="float32")
+action_prev = np.array([0, 0, 0, 0], dtype="float32")
+action_prev2 = np.array([0, 0, 0, 0], dtype="float32")
+action_prev3 = np.array([0, 0, 0, 0], dtype="float32")
+action_prev4 = np.array([0, 0, 0, 0], dtype="float32")
+action_prev5 = np.array([0, 0, 0, 0], dtype="float32")
 
 vector_init.append(i)
 
@@ -237,15 +237,15 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
 
         SEED = random.randint(1, 100000)
         env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['pick-place-v2-goal-observable'](seed=SEED)
-        policy = SawyerPickPlaceV2Policy()
+        policy = SawyerPickOutOfHoleV2Policy()
         obs = env.reset()  # Reset environment
         obs_data = None
 
-        action_prev = np.array([0, 0, 0], dtype="float32")
-        action_prev2 = np.array([0, 0, 0], dtype="float32")
-        action_prev3 = np.array([0, 0, 0], dtype="float32")
-        action_prev4 = np.array([0, 0, 0], dtype="float32")
-        action_prev5 = np.array([0, 0, 0], dtype="float32")
+        action_prev = np.array([0, 0, 0, 0], dtype="float32")
+        action_prev2 = np.array([0, 0, 0, 0], dtype="float32")
+        action_prev3 = np.array([0, 0, 0, 0], dtype="float32")
+        action_prev4 = np.array([0, 0, 0, 0], dtype="float32")
+        action_prev5 = np.array([0, 0, 0, 0], dtype="float32")
         print(action_prev)
         print(action_prev2)
         print(action_prev3)
@@ -280,6 +280,9 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
     obs_prev = obs
     env_prev = env
     obs, reward, done, info = env.step(action)
+    near_object = int(info['near_object'])
+    if near_object == 1:
+        done = True
     action_prev5 = action_prev4
     action_prev4 = action_prev3
     action_prev3 = action_prev2

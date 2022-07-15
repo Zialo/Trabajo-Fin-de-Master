@@ -18,31 +18,56 @@ from metaworld.envs import (ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE,
                             
 OPTION = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 
-NAME = 'Dataset_Mujoco_2'
-carpetas = ['MuJoCo_500_1',
-            'MuJoCo_500_2',
-            'MuJoCo_500_3',
-            'MuJoCo_500_4']
+NAME = 'Dataset_Mujoco_Button'
+carpetas = ['Button0',
+            'Button1',
+            'Button2',
+            'Button3',
+            'Button4',
+            'Button5',
+            'Button6',
+            'Button7',
+            'Button8']
 
-csv_train = ['MuJoCo_500_1/Train_dataset/Train_Actions.csv',
-             'MuJoCo_500_2/Train_dataset/Train_Actions.csv',
-             'MuJoCo_500_3/Train_dataset/Train_Actions.csv',
-             'MuJoCo_500_4/Train_dataset/Train_Actions.csv']
+csv_train = ['Button0/Train_dataset/Train_Actions.csv',
+             'Button1/Train_dataset/Train_Actions.csv',
+             'Button2/Train_dataset/Train_Actions.csv',
+             'Button3/Train_dataset/Train_Actions.csv',
+             'Button4/Train_dataset/Train_Actions.csv',
+             'Button5/Train_dataset/Train_Actions.csv',
+             'Button6/Train_dataset/Train_Actions.csv',
+             'Button7/Train_dataset/Train_Actions.csv',
+             'Button8/Train_dataset/Train_Actions.csv']
 
-csv_test = ['MuJoCo_500_1/Test_dataset/Test_Actions.csv',
-            'MuJoCo_500_2/Test_dataset/Test_Actions.csv',
-            'MuJoCo_500_3/Test_dataset/Test_Actions.csv',
-            'MuJoCo_500_4/Test_dataset/Test_Actions.csv']
+csv_test =  ['Button0/Test_dataset/Test_Actions.csv',
+             'Button1/Test_dataset/Test_Actions.csv',
+             'Button2/Test_dataset/Test_Actions.csv',
+             'Button3/Test_dataset/Test_Actions.csv',
+             'Button4/Test_dataset/Test_Actions.csv',
+             'Button5/Test_dataset/Test_Actions.csv',
+             'Button6/Test_dataset/Test_Actions.csv',
+             'Button7/Test_dataset/Test_Actions.csv',
+             'Button8/Test_dataset/Test_Actions.csv']
 
-csv_tam_train = ['MuJoCo_500_1/Train_dataset/Tam_pruebas_train.csv',
-                 'MuJoCo_500_2/Train_dataset/Tam_pruebas_train.csv',
-                 'MuJoCo_500_3/Train_dataset/Tam_pruebas_train.csv',
-                 'MuJoCo_500_4/Train_dataset/Tam_pruebas_train.csv']
+csv_tam_train = ['Button0/Train_dataset/Tam_pruebas_train.csv',
+                 'Button1/Train_dataset/Tam_pruebas_train.csv',
+                 'Button2/Train_dataset/Tam_pruebas_train.csv',
+                 'Button3/Train_dataset/Tam_pruebas_train.csv',
+                 'Button4/Train_dataset/Tam_pruebas_train.csv',
+                 'Button5/Train_dataset/Tam_pruebas_train.csv',
+                 'Button6/Train_dataset/Tam_pruebas_train.csv',
+                 'Button7/Train_dataset/Tam_pruebas_train.csv',
+                 'Button8/Train_dataset/Tam_pruebas_train.csv']
 
-csv_tam_test = ['MuJoCo_500_1/Test_dataset/Tam_pruebas_test.csv',
-                'MuJoCo_500_2/Test_dataset/Tam_pruebas_test.csv',
-                'MuJoCo_500_3/Test_dataset/Tam_pruebas_test.csv',
-                'MuJoCo_500_4/Test_dataset/Tam_pruebas_test.csv']
+csv_tam_test =  ['Button0/Test_dataset/Tam_pruebas_test.csv',
+                 'Button1/Test_dataset/Tam_pruebas_test.csv',
+                 'Button2/Test_dataset/Tam_pruebas_test.csv',
+                 'Button3/Test_dataset/Tam_pruebas_test.csv',
+                 'Button4/Test_dataset/Tam_pruebas_test.csv',
+                 'Button5/Test_dataset/Tam_pruebas_test.csv',
+                 'Button6/Test_dataset/Tam_pruebas_test.csv',
+                 'Button7/Test_dataset/Tam_pruebas_test.csv',
+                 'Button8/Test_dataset/Tam_pruebas_test.csv']
 
 # Genero las carpetas
 if not os.path.exists(NAME):
@@ -159,8 +184,9 @@ for carpeta in carpetas:
                 if (i == csv_tam_train[0]) or ((i != csv_tam_train[0]) and (int(row[0]) != 0)):  # Para saltarnos el primer 0 del resto
                     value = int(row[0]) + tam_max
                     tam.append(value)
-        tam_max = int(row[0])
+        tam_max = value
         print('Tam_max: ', str(tam_max))
+        print('Tam Length: ', str(len(tam)))
 
     # Genero un nuevo CSV de Tam
     with open(NAME + "/Train_dataset/Tam_pruebas_train.csv", 'w') as f:
@@ -245,8 +271,9 @@ for carpeta in carpetas:
                 if (i == csv_tam_test[0]) or ((i != csv_tam_test[0]) and (int(row[0]) != 0)):  # Para saltarnos el primer 0 del resto
                     value = int(row[0]) + tam_max
                     tam.append(value)
-        tam_max = int(row[0])
+        tam_max = value
         print('Tam_max: ', str(tam_max))
+        print('Tam Length: ', str(len(tam)))
 
     # Genero un nuevo CSV de Tam
     with open(NAME + "/Test_dataset/Tam_pruebas_test.csv", 'w') as f:
