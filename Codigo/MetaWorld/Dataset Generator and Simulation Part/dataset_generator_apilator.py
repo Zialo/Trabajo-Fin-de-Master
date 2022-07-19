@@ -18,56 +18,31 @@ from metaworld.envs import (ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE,
                             
 OPTION = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 
-NAME = 'Dataset_Mujoco_Button'
-carpetas = ['Button0',
-            'Button1',
-            'Button2',
-            'Button3',
-            'Button4',
-            'Button5',
-            'Button6',
-            'Button7',
-            'Button8']
+NAME = 'Dataset_Mujoco_Window'
+carpetas = ['window1',
+            'window2',
+            'window3',
+            'window4']
 
-csv_train = ['Button0/Train_dataset/Train_Actions.csv',
-             'Button1/Train_dataset/Train_Actions.csv',
-             'Button2/Train_dataset/Train_Actions.csv',
-             'Button3/Train_dataset/Train_Actions.csv',
-             'Button4/Train_dataset/Train_Actions.csv',
-             'Button5/Train_dataset/Train_Actions.csv',
-             'Button6/Train_dataset/Train_Actions.csv',
-             'Button7/Train_dataset/Train_Actions.csv',
-             'Button8/Train_dataset/Train_Actions.csv']
+csv_train = ['window1/Train_dataset/Train_Actions.csv',
+             'window2/Train_dataset/Train_Actions.csv',
+             'window3/Train_dataset/Train_Actions.csv',
+             'window4/Train_dataset/Train_Actions.csv']
 
-csv_test =  ['Button0/Test_dataset/Test_Actions.csv',
-             'Button1/Test_dataset/Test_Actions.csv',
-             'Button2/Test_dataset/Test_Actions.csv',
-             'Button3/Test_dataset/Test_Actions.csv',
-             'Button4/Test_dataset/Test_Actions.csv',
-             'Button5/Test_dataset/Test_Actions.csv',
-             'Button6/Test_dataset/Test_Actions.csv',
-             'Button7/Test_dataset/Test_Actions.csv',
-             'Button8/Test_dataset/Test_Actions.csv']
+csv_test =  ['window1/Test_dataset/Test_Actions.csv',
+             'window2/Test_dataset/Test_Actions.csv',
+             'window3/Test_dataset/Test_Actions.csv',
+             'window4/Test_dataset/Test_Actions.csv']
 
-csv_tam_train = ['Button0/Train_dataset/Tam_pruebas_train.csv',
-                 'Button1/Train_dataset/Tam_pruebas_train.csv',
-                 'Button2/Train_dataset/Tam_pruebas_train.csv',
-                 'Button3/Train_dataset/Tam_pruebas_train.csv',
-                 'Button4/Train_dataset/Tam_pruebas_train.csv',
-                 'Button5/Train_dataset/Tam_pruebas_train.csv',
-                 'Button6/Train_dataset/Tam_pruebas_train.csv',
-                 'Button7/Train_dataset/Tam_pruebas_train.csv',
-                 'Button8/Train_dataset/Tam_pruebas_train.csv']
+csv_tam_train = ['window1/Train_dataset/Tam_pruebas_train.csv',
+                 'window2/Train_dataset/Tam_pruebas_train.csv',
+                 'window3/Train_dataset/Tam_pruebas_train.csv',
+                 'window4/Train_dataset/Tam_pruebas_train.csv']
 
-csv_tam_test =  ['Button0/Test_dataset/Tam_pruebas_test.csv',
-                 'Button1/Test_dataset/Tam_pruebas_test.csv',
-                 'Button2/Test_dataset/Tam_pruebas_test.csv',
-                 'Button3/Test_dataset/Tam_pruebas_test.csv',
-                 'Button4/Test_dataset/Tam_pruebas_test.csv',
-                 'Button5/Test_dataset/Tam_pruebas_test.csv',
-                 'Button6/Test_dataset/Tam_pruebas_test.csv',
-                 'Button7/Test_dataset/Tam_pruebas_test.csv',
-                 'Button8/Test_dataset/Tam_pruebas_test.csv']
+csv_tam_test =  ['window1/Test_dataset/Tam_pruebas_test.csv',
+                 'window2/Test_dataset/Tam_pruebas_test.csv',
+                 'window3/Test_dataset/Tam_pruebas_test.csv',
+                 'window4/Test_dataset/Tam_pruebas_test.csv']
 
 # Genero las carpetas
 if not os.path.exists(NAME):
@@ -168,7 +143,7 @@ for carpeta in carpetas:
         write = csv.writer(f)
         for i_a in range(len(action_train)):
             row = []
-            for a in range(4):
+            for a in range(3):
                 row.append(action_train[i_a][a])
             write.writerow(row)
 
@@ -255,7 +230,7 @@ for carpeta in carpetas:
         write = csv.writer(f)
         for i_a in range(len(action_test)):
             row = []
-            for a in range(4):
+            for a in range(3):
                 row.append(action_test[i_a][a])
             write.writerow(row)
 

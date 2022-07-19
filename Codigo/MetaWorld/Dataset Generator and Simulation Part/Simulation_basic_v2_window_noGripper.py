@@ -17,7 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 import metaworld
 import random
 import matplotlib.pyplot as plt
-from metaworld.policies.sawyer_button_press_v2_policy import SawyerButtonPressV2Policy
+from metaworld.policies.sawyer_window_open_v2_policy import SawyerWindowOpenV2Policy
 import tqdm
 import random
 import imageio as iio
@@ -202,11 +202,10 @@ num_iters_seguidas = 0
 
 # Condicion de inicio
 print('Reset Episode')
-print('Acciones desde t hasta t-5:')
 
-SEED = random.randint(1, 100000)
-env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['button-press-v2-goal-observable'](seed=SEED)
-policy = SawyerButtonPressV2Policy()
+SEED = 10
+env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['window-open-v2-goal-observable'](seed=SEED)
+policy = SawyerWindowOpenV2Policy()
 obs = env.reset()  # Reset environment
 obs_data = None
 
@@ -218,26 +217,23 @@ action_prev5 = np.array([0, 0, 0, 0], dtype="float32")
 
 vector_init.append(i)
 
-if (done == False):
-    vector_finalize_bool.append(0)
-else:
-    vector_finalize_bool.append(1)
-
 done = False
 its = its + 1
 obs_prev = obs
+nearness = 0 # Vamos a queres que una vez este cerca, se siga acercando diez iteraciones mas
 
 while (not done) or (int(NUM_PRUEBAS) > int(its)):
     print("Reinicio cuando = 0 -> ", str(int(NUM_ITERS) - int(num_iters_seguidas)))
     print("Pruebas realizadas correctamente: ", int(finalize), "/", int(NUM_PRUEBAS))
+    print(vector_finalize_bool)
     if ((int(NUM_ITERS) - int(num_iters_seguidas) == 0) or (done == True)):
 
         print('Reset Episode')
-        print('Acciones desde t hasta t-5:')
+        print('Accion previa:')
 
-        SEED = random.randint(1, 100000)
-        env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['button-press-v2-goal-observable'](seed=SEED)
-        policy = SawyerButtonPressV2Policy()
+        SEED = 10 + int(its)
+        env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['window-open-v2-goal-observable'](seed=SEED)
+        policy = SawyerWindowOpenV2Policy()
         obs = env.reset()  # Reset environment
         obs_data = None
 
@@ -256,15 +252,24 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
 
         vector_init.append(i)
 
-        if (done == False):
-            vector_finalize_bool.append(0)
-        else:
-            vector_finalize_bool[-1] = 1
-
+        if (done == True):
+            vector_finalize_bool[int(its)-1] = 1
         done = False
         its = its + 1
         obs_prev = obs
         env_prev = env
+    
+    if len(action_prev) == 4:
+        action_prev = action_prev[:-1]
+    if len(action_prev2) == 4:
+        action_prev2 = action_prev2[:-1]
+    if len(action_prev3) == 4:
+        action_prev3 = action_prev3[:-1]
+    if len(action_prev4) == 4:
+        action_prev4 = action_prev4[:-1]
+    if len(action_prev5) == 4:
+        action_prev5 = action_prev5[:-1]
+
 
     action = predict(model, env, env_prev, action_prev, action_prev2, action_prev3, action_prev4, action_prev5, i, SAVE)
     action_no_norm = np.array(action, dtype="float32")
@@ -279,10 +284,31 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
 
     obs_prev = obs
     env_prev = env
-    obs, reward, done, info = env.step(action)
-    near_object = int(info['success'])
-    if near_object == 1:
+
+    '''
+    ##### Nuevo
+    print('Gripper: ', str(float(action_no_norm[-1])))
+    if float(action_no_norm[-1]) <= 0.05:
+        action_no_norm[-1] = 0
+    else:
+        action_no_norm[-1] = 0.1
+    ##### Nuevo
+    '''
+    
+    action_no_norm_aux = list(action_no_norm)
+    action_no_norm_aux.append(0)
+    action_no_norm = np.array(action_no_norm_aux, dtype='float32')
+
+    obs, reward, done, info = env.step(action_no_norm)
+    near_object = float(info['success'])
+    near_object2 = float(info['in_place_reward'])
+    if near_object == 1.0 or near_object2 >= 0.85:
+        nearness +=1
+
+    if nearness >= 1:
         done = True
+        nearness = 0
+        
     action_prev5 = action_prev4
     action_prev4 = action_prev3
     action_prev3 = action_prev2
@@ -295,6 +321,8 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
     print(action_prev3)
     print(action_prev4)
     print(action_prev5)
+    print('Nearness: ', str(nearness))
+    print('Done: ', str(near_object))
 
     i = i + 1
     num_iters_seguidas = num_iters_seguidas + 1
@@ -309,36 +337,62 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
     print("Num Pruebas: ", int(NUM_PRUEBAS))
 
     if its > int(NUM_PRUEBAS):
-        done = True
+        done = True  	 
 
     print('Terminate :', done)
 
-vector_init.append(99)
 vector_pruebas = []
-header = ['Inicio', 'Final', 'Intentos', 'Finaliza']
+header = ['Inicio', 'Final', 'Intentos', 'Finaliza', 'Acierto']
 
-for i in range(int(NUM_PRUEBAS) + 1):
-    vector_pruebas.append(vector_init[i + 1] - vector_init[i])
-
-vector_pruebas[-1] = 999
-vector_init[-1] = 888
-vector_finalize_bool[-1] = 777
 CSV_NAME = str(MODEL_NAME) + ".csv"
 PATH = 'Resultados/' + str(CSV_NAME)
 
-for i in range(len(vector_init) - 1):
+for i in range(len(vector_init)-1):
     vector_finalize.append(int(vector_init[i + 1]) - 1)
-    vector_pruebas.append(int(vector_finalize[i]) - int(vector_init[i]))
+vector_finalize.append(i-1)
+
+print(len(vector_init))
+print(vector_init)
+print(len(vector_finalize))
+print(vector_finalize)
+print(len(vector_pruebas))
+print(vector_pruebas)
+print(len(vector_finalize_bool))
+print(vector_finalize_bool)
+print(len(vector_porcentaje_acierto))
+print(vector_porcentaje_acierto)
+
+for i in range(int(NUM_PRUEBAS)):
+    vector_pruebas.append(vector_finalize[i] - vector_init[i] + 1)
+
+sum_cum = 0
+for i in range(len(vector_init) - 1):
+    sum_cum += vector_finalize_bool[i]
+    x = sum_cum * 100
+    value = str(round(float(x/(1+i)))) + "%"
+    vector_porcentaje_acierto.append(value)
+
+print(len(vector_init))
+print(vector_init)
+print(len(vector_finalize))
+print(vector_finalize)
+print(len(vector_pruebas))
+print(vector_pruebas)
+print(len(vector_finalize_bool))
+print(vector_finalize_bool)
+print(len(vector_porcentaje_acierto))
+print(vector_porcentaje_acierto)
 
 with open(CSV_NAME, 'w') as f:
     write = csv.writer(f)
     write.writerow(header)
-    for i in range(len(vector_init) - 2):
+    for i in range(len(vector_init) - 1):
         row = []
         row.append(vector_init[i])
         row.append(vector_finalize[i])
         row.append(vector_pruebas[i])
         row.append(vector_finalize_bool[i])
+        row.append(vector_porcentaje_acierto[i])
         write.writerow(row)
 
 '''

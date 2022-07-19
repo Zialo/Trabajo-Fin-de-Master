@@ -17,7 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 import metaworld
 import random
 import matplotlib.pyplot as plt
-from metaworld.policies.sawyer_pick_out_of_hole_v2_policy import SawyerPickOutOfHoleV2Policy
+from metaworld.policies.sawyer_window_open_v2_policy import SawyerWindowOpenV2Policy
 import tqdm
 import random
 import imageio as iio
@@ -85,7 +85,6 @@ class MultiImage(nn.Module):
 
 def predict(model, env, env_prev, action_prev, i, SAVE):
     model = model.eval()
-
     # Get image from observation
     image, top, corner, corner2, corner3, gripper, behindgripper = get_image_from_observation(env, env_prev, i)
 
@@ -130,7 +129,6 @@ def predict(model, env, env_prev, action_prev, i, SAVE):
         pred = model((image, action_prev))
     pred = pred.detach().cpu().numpy()
     prediction = pred[0, :].tolist()
-    #prediction.append(1)
     #prediction.append(1)
     # print("PRED", prediction, " FIN")
     return prediction
@@ -189,9 +187,9 @@ num_iters_seguidas = 0
 # Condicion de inicio
 print('Reset Episode')
 
-SEED = random.randint(1, 100000)
-env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['pick-place-v2-goal-observable'](seed=SEED) # Review
-policy = SawyerPickOutOfHoleV2Policy()
+SEED = 10
+env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['window-open-v2-goal-observable'](seed=SEED)
+policy = SawyerWindowOpenV2Policy()
 obs = env.reset()  # Reset environment
 obs_data = None
 
@@ -213,9 +211,9 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
         print('Reset Episode')
         print('Accion previa:')
 
-        SEED = random.randint(1, 100000)
-        env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['pick-place-v2-goal-observable'](seed=SEED)
-        policy = SawyerPickOutOfHoleV2Policy()
+        SEED = 10 + int(its)
+        env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['window-open-v2-goal-observable'](seed=SEED)
+        policy = SawyerWindowOpenV2Policy()
         obs = env.reset()  # Reset environment
         obs_data = None
 
@@ -232,6 +230,10 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
         its = its + 1
         obs_prev = obs
         env_prev = env
+    
+    if len(action_prev) == 4:
+        action_prev = action_prev[:-1]
+
 
     action = predict(model, env, env_prev, action_prev, i, SAVE)
     action_no_norm = np.array(action, dtype="float32")
@@ -246,18 +248,36 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
 
     obs_prev = obs
     env_prev = env
-    obs, reward, done, info = env.step(action)
-    near_object = int(info['near_object'])
-    if near_object == 1:
+
+    '''
+    ##### Nuevo
+    print('Gripper: ', str(float(action_no_norm[-1])))
+    if float(action_no_norm[-1]) <= 0.05:
+        action_no_norm[-1] = 0
+    else:
+        action_no_norm[-1] = 0.1
+    ##### Nuevo
+    '''
+    
+    action_no_norm_aux = list(action_no_norm)
+    action_no_norm_aux.append(0)
+    action_no_norm = np.array(action_no_norm_aux, dtype='float32')
+
+    obs, reward, done, info = env.step(action_no_norm)
+    near_object = float(info['success'])
+    near_object2 = float(info['in_place_reward'])
+    if near_object == 1.0 or near_object2 >= 0.85:
         nearness +=1
 
-    if nearness >= 10:
+    if nearness >= 1:
         done = True
         nearness = 0
+        
     action_prev = action_no_norm
 
-    print('Accion previa:')
+    print('Acciones desde t hasta t-5:')
     print(action_prev)
+
     print('Nearness: ', str(nearness))
     print('Done: ', str(near_object))
 
@@ -286,7 +306,19 @@ PATH = 'Resultados/' + str(CSV_NAME)
 
 for i in range(len(vector_init)-1):
     vector_finalize.append(int(vector_init[i + 1]) - 1)
-    
+vector_finalize.append(i-1)
+
+print(len(vector_init))
+print(vector_init)
+print(len(vector_finalize))
+print(vector_finalize)
+print(len(vector_pruebas))
+print(vector_pruebas)
+print(len(vector_finalize_bool))
+print(vector_finalize_bool)
+print(len(vector_porcentaje_acierto))
+print(vector_porcentaje_acierto)
+
 for i in range(int(NUM_PRUEBAS)):
     vector_pruebas.append(vector_finalize[i] - vector_init[i] + 1)
 
@@ -294,7 +326,7 @@ sum_cum = 0
 for i in range(len(vector_init) - 1):
     sum_cum += vector_finalize_bool[i]
     x = sum_cum * 100
-    value = str(float(x/i)) + "%"
+    value = str(round(float(x/(1+i)))) + "%"
     vector_porcentaje_acierto.append(value)
 
 print(len(vector_init))
