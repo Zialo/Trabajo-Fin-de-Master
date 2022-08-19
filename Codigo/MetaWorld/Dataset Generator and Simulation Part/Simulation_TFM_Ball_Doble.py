@@ -17,7 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 import metaworld
 import random
 import matplotlib.pyplot as plt
-from metaworld.policies.sawyer_button_press_v2_policy import SawyerButtonPressV2Policy
+from metaworld.policies.sawyer_pick_out_of_hole_v2_policy import SawyerPickOutOfHoleV2Policy
 import tqdm
 import random
 import imageio as iio
@@ -32,29 +32,35 @@ SAVE = sys.argv[4] if len(sys.argv) > 4 else 1
 OPTION = sys.argv[5] if len(sys.argv) > 5 else False
 MODEL_NAME = sys.argv[6] if len(sys.argv) > 6 else 'model_pytorch_01593'
 
+IMAGEN1 = ((MODEL_NAME.split("_")[2]).split(".")[0]).split("+")[0]
+IMAGEN2 = ((MODEL_NAME.split("_")[2]).split(".")[0]).split("+")[1]
+IMAGEN = str(IMAGEN1) + ' + ' + str(IMAGEN2)
+print(IMAGEN1)
+print(IMAGEN2)
+
 if OPTION != True and OPTION != False:
     OPTION = True
 
 print('Parametros introducidos: \n -NORM: ', str(NORM), '\n -NUM_PRUEBAS: ', str(NUM_PRUEBAS), '\n -NUM_ITERS: ', str(NUM_ITERS), '\n -OPTION: ', str(OPTION), '\n -SAVE: ', str(SAVE), '\n -MODEL: ', str(MODEL_NAME), '\n')
 
 # Preparo carpeta de Train
-if not os.path.exists("Imagenes GIF"):
-    os.makedirs("Imagenes GIF")
-    os.makedirs("Imagenes GIF/Top")
-    os.makedirs("Imagenes GIF/Corner")
-    os.makedirs("Imagenes GIF/Corner2")
-    os.makedirs("Imagenes GIF/Corner3")
-    os.makedirs("Imagenes GIF/Gripper")
-    os.makedirs("Imagenes GIF/BehindGripper")
+if not os.path.exists("Imagenes GIF " + str(IMAGEN) ):
+    os.makedirs("Imagenes GIF " + str(IMAGEN))
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Top")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Corner")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Corner2")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Corner3")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Gripper")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/BehindGripper")
 else:
-    shutil.rmtree("Imagenes GIF")
-    os.makedirs("Imagenes GIF")
-    os.makedirs("Imagenes GIF/Top")
-    os.makedirs("Imagenes GIF/Corner")
-    os.makedirs("Imagenes GIF/Corner2")
-    os.makedirs("Imagenes GIF/Corner3")
-    os.makedirs("Imagenes GIF/Gripper")
-    os.makedirs("Imagenes GIF/BehindGripper")
+    shutil.rmtree("Imagenes GIF " + str(IMAGEN))
+    os.makedirs("Imagenes GIF " + str(IMAGEN))
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Top")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Corner")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Corner2")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Corner3")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/Gripper")
+    os.makedirs("Imagenes GIF " + str(IMAGEN) + "/BehindGripper")
 
 # Preparo la carpeta de Resultados
 if not os.path.exists("Resultados"):
@@ -71,54 +77,38 @@ class MultiImage(nn.Module):
         self.flatten = nn.Flatten()
 
     def forward(self, x):
-        x1, x2, x3, x4, x5, x6 = x
+        x1, x2 = x
 
         x2 = torch.from_numpy(x2)
         x2 = x2.unsqueeze(0)
         x2 = x2.to(torch.float32)
 
-        x3 = torch.from_numpy(x3)
-        x3 = x3.unsqueeze(0)
-        x3 = x3.to(torch.float32)
-
-        x4 = torch.from_numpy(x4)
-        x4 = x4.unsqueeze(0)
-        x4 = x4.to(torch.float32)
-
-        x5 = torch.from_numpy(x5)
-        x5 = x5.unsqueeze(0)
-        x5 = x5.to(torch.float32)
-
-        x6 = torch.from_numpy(x6)
-        x6 = x6.unsqueeze(0)
-        x6 = x6.to(torch.float32)
-
         f1 = self.fe(x1)
         f = self.flatten(self.avg_pool(f1))
 
-        f = torch.cat((f, x2, x3, x4, x5, x6), dim=1)
+        f = torch.cat((f, x2), dim=1)
         return self.clf(f)
 
-def predict(model, env, env_prev, action_prev, action_prev2, action_prev3, action_prev4, action_prev5, i, SAVE):
+def predict(model, env, env_prev, action_prev, i, SAVE):
     model = model.eval()
     # Get image from observation
-    image, top, corner, corner2, corner3, gripper, behindgripper = get_image_from_observation(env, env_prev, i)
+    im1, im2, im3, im4, im5, im6, im7, im8, im9, im10, im11, im12 = get_image_from_observation(env, env_prev, i)
 
     if int(SAVE) == 1:
         # Save three first Images
-        name_1 = "Imagenes GIF/Top/" + str(i) + ".png"
-        name_2 = "Imagenes GIF/Corner/" + str(i) + ".png"
-        name_3 = "Imagenes GIF/Corner2/" + str(i) + ".png"
-        name_4 = "Imagenes GIF/Corner3/" + str(i) + ".png"
-        name_5 = "Imagenes GIF/Gripper/" + str(i) + ".png"
-        name_6 = "Imagenes GIF/BehindGripper/" + str(i) + ".png"
+        name_1 = "Imagenes GIF " + str(IMAGEN) + "/Top/" + str(i) + ".png"
+        name_2 = "Imagenes GIF " + str(IMAGEN) + "/Corner/" + str(i) + ".png"
+        name_3 = "Imagenes GIF " + str(IMAGEN) + "/Corner2/" + str(i) + ".png"
+        name_4 = "Imagenes GIF " + str(IMAGEN) + "/Corner3/" + str(i) + ".png"
+        name_5 = "Imagenes GIF " + str(IMAGEN) + "/Gripper/" + str(i) + ".png"
+        name_6 = "Imagenes GIF " + str(IMAGEN) + "/BehindGripper/" + str(i) + ".png"
 
-        top = Image.fromarray(top)
-        corner = Image.fromarray(corner)
-        corner2 = Image.fromarray(corner2)
-        corner3 = Image.fromarray(corner3)
-        gripper = Image.fromarray(gripper)
-        behindgripper = Image.fromarray(behindgripper)
+        top = Image.fromarray(im1)
+        corner = Image.fromarray(im2)
+        corner2 = Image.fromarray(im3)
+        corner3 = Image.fromarray(im4)
+        gripper = Image.fromarray(im5)
+        behindgripper = Image.fromarray(im6)
 
         top.save(name_1, "PNG")
         corner.save(name_2, "PNG")
@@ -129,20 +119,60 @@ def predict(model, env, env_prev, action_prev, action_prev2, action_prev3, actio
 
     transformations = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.485, 0.456, 0.406, 0.485, 0.456, 0.406, 0.485, 0.456, 0.406,
-                              0.485, 0.456, 0.406, 0.485, 0.456, 0.406, 0.485, 0.456, 0.406,
-                              0.485, 0.456, 0.406, 0.485, 0.456, 0.406, 0.485, 0.456, 0.406,
-                              0.485, 0.456, 0.406, 0.485, 0.456, 0.406, 0.485, 0.456, 0.406),
-                             (0.229, 0.224, 0.225, 0.229, 0.224, 0.225, 0.229, 0.224, 0.225,
-                              0.229, 0.224, 0.225, 0.229, 0.224, 0.225, 0.229, 0.224, 0.225,
-                              0.229, 0.224, 0.225, 0.229, 0.224, 0.225, 0.229, 0.224, 0.225,
-                              0.229, 0.224, 0.225, 0.229, 0.224, 0.225, 0.229, 0.224, 0.225))
+        transforms.Normalize((0.49181671, 0.39326644, 0.36987189),
+                             (0.17034939, 0.22785992,  0.23052381))
     ])
+    
+    if IMAGEN1 == 'Top':
+        im_1 = im1
+        im_3 = im7
+    elif IMAGEN1 == 'Corner':
+        im_1 = im2
+        im_3 = im8
+    elif IMAGEN1 == 'Corner2':
+        im_1 = im3
+        im_3 = im9
+    elif IMAGEN1 == 'Corner3':
+        im_1 = im4
+        im_3 = im10
+    elif IMAGEN1 == 'Gripper':
+        im_1 = im5
+        im_3 = im11
+    elif IMAGEN1 == 'Behindgripper' or 'BehindGripper':
+        im_1 = im6
+        im_3 = im12
+    
+    if IMAGEN2 == 'Top':
+        im_2 = im1
+        im_4 = im7
+    elif IMAGEN2 == 'Corner':
+        im_2 = im2
+        im_4 = im8
+    elif IMAGEN2 == 'Corner2':
+        im_2 = im3
+        im_4 = im9
+    elif IMAGEN2 == 'Corner3':
+        im_2 = im4
+        im_4 = im10
+    elif IMAGEN2 == 'Gripper':
+        im_2 = im5
+        im_4 = im11
+    elif IMAGEN2 == 'Behindgripper' or 'BehindGripper':
+        im_2 = im6
+        im_4 = im12
 
-    image = transformations(image).unsqueeze(dim=0)
+    im1 = transformations(im_1)
+    im2 = transformations(im_2)
+    im3 = transformations(im_3)
+    im4 = transformations(im_4)
+    
+    im_actual = torch.cat((im1, im2), axis=0)
+    im_previa = torch.cat((im3, im4), axis=0)
+    image = torch.cat((im_actual, im_previa), axis=0)
+    image = image.unsqueeze(dim=0)
 
     with torch.no_grad():
-        pred = model((image, action_prev, action_prev2, action_prev3, action_prev4, action_prev5))
+        pred = model((image, action_prev))
     pred = pred.detach().cpu().numpy()
     prediction = pred[0, :].tolist()
     #prediction.append(1)
@@ -173,11 +203,7 @@ def get_image_from_observation(env, env_prev, i):
         im11 = env_prev.render(offscreen=True, camera_name='gripperPOV', resolution=(img_size[0], img_size[1]))
         im12 = env_prev.render(offscreen=True, camera_name='behindGripper', resolution=(img_size[0], img_size[1]))
 
-    im_actual = np.concatenate((im1, im2, im3, im4, im5, im6), axis=2)
-    im_previa = np.concatenate((im7, im8, im9, im10, im11, im12), axis=2)
-    image = np.concatenate((im_actual, im_previa), axis=2)
-
-    return image, im1, im2, im3, im4, im5, im6  # Le pasamos la im1 para que la guarde y haga GIFs en predict()
+    return im1, im2, im3, im4, im5, im6, im7, im8, im9, im10, im11, im12  # Le pasamos la im1 para que la guarde y haga GIFs en predict()
 
 # Load model
 model = torch.load(MODEL_NAME, map_location='cpu')
@@ -204,16 +230,12 @@ num_iters_seguidas = 0
 print('Reset Episode')
 
 SEED = 10
-env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['button-press-v2-goal-observable'](seed=SEED)
-policy = SawyerButtonPressV2Policy()
+env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['pick-place-v2-goal-observable'](seed=SEED)
+policy = SawyerPickOutOfHoleV2Policy()
 obs = env.reset()  # Reset environment
 obs_data = None
 
-action_prev = np.array([0, 0, 0, 0], dtype="float32")
-action_prev2 = np.array([0, 0, 0, 0], dtype="float32")
-action_prev3 = np.array([0, 0, 0, 0], dtype="float32")
-action_prev4 = np.array([0, 0, 0, 0], dtype="float32")
-action_prev5 = np.array([0, 0, 0, 0], dtype="float32")
+action_prev = np.array([0, 0, 0], dtype="float32")
 
 vector_init.append(i)
 
@@ -232,21 +254,13 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
         print('Accion previa:')
 
         SEED = 10 + int(its)
-        env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['button-press-v2-goal-observable'](seed=SEED)
-        policy = SawyerButtonPressV2Policy()
+        env = ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE['pick-place-v2-goal-observable'](seed=SEED)
+        policy = SawyerPickOutOfHoleV2Policy()
         obs = env.reset()  # Reset environment
         obs_data = None
 
-        action_prev = np.array([0, 0, 0, 0], dtype="float32")
-        action_prev2 = np.array([0, 0, 0, 0], dtype="float32")
-        action_prev3 = np.array([0, 0, 0, 0], dtype="float32")
-        action_prev4 = np.array([0, 0, 0, 0], dtype="float32")
-        action_prev5 = np.array([0, 0, 0, 0], dtype="float32")
+        action_prev = np.array([0, 0, 0], dtype="float32")
         print(action_prev)
-        print(action_prev2)
-        print(action_prev3)
-        print(action_prev4)
-        print(action_prev5)
 
         num_iters_seguidas = 0
 
@@ -258,8 +272,13 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
         its = its + 1
         obs_prev = obs
         env_prev = env
+    
+    if len(action_prev) == 4:
+        action_prev = action_prev[:-1]
+    
 
-    action = predict(model, env, env_prev, action_prev, action_prev2, action_prev3, action_prev4, action_prev5, i, SAVE)
+
+    action = predict(model, env, env_prev, action_prev, i, SAVE)
     action_no_norm = np.array(action, dtype="float32")
 
     if NORM == str(1):  # En caso de tener que desnormalizar las acciones
@@ -273,6 +292,7 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
     obs_prev = obs
     env_prev = env
 
+    '''
     ##### Nuevo
     print('Gripper: ', str(float(action_no_norm[-1])))
     if float(action_no_norm[-1]) <= 0.05:
@@ -280,30 +300,42 @@ while (not done) or (int(NUM_PRUEBAS) > int(its)):
     else:
         action_no_norm[-1] = 0.1
     ##### Nuevo
+    
+    
+    action_no_norm_aux = list(action_no_norm)
+    action_no_norm_aux.append(0.1)
+    action_no_norm = np.array(action_no_norm_aux, dtype='float32')
+    '''
+    
+    if action_no_norm[2] < (-0.6):
+    	action_no_norm_aux = list(action_no_norm)
+    	action_no_norm_aux.append(0.1)
+    	action_no_norm = np.array(action_no_norm_aux, dtype='float32')
+    else:
+    	action_no_norm_aux = list(action_no_norm)
+    	action_no_norm_aux.append(0)
+    	action_no_norm = np.array(action_no_norm_aux, dtype='float32')
 
     obs, reward, done, info = env.step(action_no_norm)
-    near_object = int(info['success'])
-    if near_object == 1:
+    near_object = int(info['near_object'])
+   
+    if near_object == 1.0:
         nearness +=1
 
-    if nearness >= 1:
+    if nearness >= 4:
         done = True
         nearness = 0
         
-    action_prev5 = action_prev4
-    action_prev4 = action_prev3
-    action_prev3 = action_prev2
-    action_prev2 = action_prev
     action_prev = action_no_norm
 
     print('Acciones desde t hasta t-5:')
     print(action_prev)
-    print(action_prev2)
-    print(action_prev3)
-    print(action_prev4)
-    print(action_prev5)
+
     print('Nearness: ', str(nearness))
     print('Done: ', str(near_object))
+    
+    #print(info)
+    #print(near_object,near_object2)
 
     i = i + 1
     num_iters_seguidas = num_iters_seguidas + 1
